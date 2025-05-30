@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lista de Casamento - Thiago e Jennyfer</title>
+  <style>
+    :root {
+      --terracota: #a0522d;
+      --fundo: #fdfaf7;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--fundo);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: var(--terracota);
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      color: #555;
+      font-weight: normal;
+      margin-bottom: 2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
+      width: 100%;
+      max-width: 1000px;
+    }
+    .card {
+      background: white;
+      border: 2px solid var(--terracota);
+      border-radius: 15px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+    }
+    .card img {
+      width: 100%;
+      max-width: 200px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      background-color: #eee;
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+    .card button {
+      background-color: var(--terracota);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+    .card button[disabled] {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>Thiago & Jennyfer</h1>
+  <h2>Escolha um presente para nos abençoar ❤️</h2>
+
+  <div class="grid" id="lista-presentes"></div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB7b43T71XJV7K8eOl1o0JuRQaqOAnqqd8",
+      authDomain: "lista-de-casamento-9d9ed.firebaseapp.com",
+      projectId: "lista-de-casamento-9d9ed",
+      storageBucket: "lista-de-casamento-9d9ed.firebasestorage.app",
+      messagingSenderId: "491598458799",
+      appId: "1:491598458799:web:7b3ebd729d99eec106895a",
+      measurementId: "G-PPN9QKWBHN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const lista = document.getElementById("lista-presentes");
+
+    async function carregarPresentes() {
+      const querySnapshot = await getDocs(collection(db, "presentes"));
+      querySnapshot.forEach((docSnap) => {
+        const dados = docSnap.data();
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const img = document.createElement("img");
+        img.src = dados.imagem || "https://via.placeholder.com/200x150?text=Imagem"; // imagem padrão
+        img.alt = dados.nome;
+
+        const titulo = document.createElement("h3");
+        titulo.innerText = dados.nome;
+
+        const botao = document.createElement("button");
+        botao.innerText = dados.disponivel ? "Escolher" : "Indisponível";
+        botao.disabled = !dados.disponivel;
+
+        botao.addEventListener("click", async () => {
+          botao.disabled = true;
+          botao.innerText = "Indisponível";
+          await updateDoc(doc(db, "presentes", docSnap.id), { disponivel: false });
+        });
+
+        card.appendChild(img);
+        card.appendChild(titulo);
+        card.appendChild(botao);
+        lista.appendChild(card);
+      });
+    }
+
+    carregarPresentes();
+  </script>
+</body>
+</html>
